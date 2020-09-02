@@ -158,17 +158,23 @@ for p0 in pdf.pages:
             # Whether data is group
             if i < len(df.index)-1 and k > j: 
                 # print( str(i) + "  " + str(j) + "  " + str(k) + "  ::  " + ww_2)
-                if (j == 0 or (j > 0 and cell[i+1][j-1] != cell[i+1][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[i+1][k] != cell[i+1][k+1])) and (cell[i+1][j] != cell[i+1][k] or ww_2 in ["Well Information", "Management Summary", "Mud Checks",        "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]) :
+                if (j == 0 or (j > 0 and cell[i+1][j-1] != cell[i+1][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[i+1][k] != cell[i+1][k+1])) and (cell[i+1][j] != cell[i+1][k] or ww_2 in ["Well Information", "Management Summary", "Mud Checks", "Mud Volume Summary", "String No. 3", "String No. 3  - Bit Information", "Wellbore Information", "Deviation Survey (Tie point) -  TABU-B19 Actual Survey",       "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]) :
                     # print( str(i) + "  " + str(j) + "  " + str(k) + "  ::  " + ww_2)
                     # Get the number of rows in a group
                     for ii in range(i+2, len(df.index)): 
                         if ww_2 == "Management Summary" : print("ii = " + str(ii))
                         if ww_2 == "Well Information" and word[cell[ii][j]] == "Daily Operations Information": break
                         if ww_2 == "Daily Operations Information" and word[cell[ii][j]] == "Time Log": break
-                        if ww_2 == "Management Summary" and word[cell[ii][j]] == "Mud Checks": break
+                        if ww_2 == "Management Summary" and word[cell[ii][j]] == "Mud Checks": break 
                         if ww_2 == "Mud Checks" and word[cell[ii][j]] == "Mud Volume Summary": break
-                        if not ((j == 0 or (j > 0 and cell[ii][j-1] != cell[ii][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[ii][k] != cell[ii][k+1])) and (cell[ii][j] != cell[ii][k] or ww_2 in ["Well Information", "Daily Operations Information", "Management Summary", "Mud Checks",       "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"])) : break
-                        if not(ww_2 in ["Well Information", "Daily Operations Information", "Management Summary", "Mud Checks",        "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]):
+                        if ww_2 == "Mud Volume Summary" and word[cell[ii][j]] == "Daily Job Supply Summary": break
+                        if ww_2 == "String No. 3" and word[cell[ii][j]] == "String No. 3  - Bit Information": break
+                        if ww_2 == "String No. 3  - Bit Information" and word[cell[ii][j]] == "String Components": break
+                        if ww_2 == "Deviation Survey (Tie point) -  TABU-B19 Actual Survey" and word[cell[ii][j]] == "Survey Data - Shows all surveys entered during the report period": break
+
+
+                        if not ((j == 0 or (j > 0 and cell[ii][j-1] != cell[ii][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[ii][k] != cell[ii][k+1])) and (cell[ii][j] != cell[ii][k] or ww_2 in ["Well Information", "Daily Operations Information", "Management Summary", "Mud Checks", "Mud Volume Summary", "String No. 3", "String No. 3", "String No. 3  - Bit Information", "Deviation Survey (Tie point) -  TABU-B19 Actual Survey",      "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"])) : break
+                        if not(ww_2 in ["Well Information", "Daily Operations Information", "Management Summary", "Mud Checks", "Mud Volume Summary", "String No. 3", "String No. 3", "String No. 3  - Bit Information", "Deviation Survey (Tie point) -  TABU-B19 Actual Survey",       "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS", "Wellbore Information"]):
                             for jj in range(j+1, k+1): 
                                 if cell[ii][jj] - cell[ii-1][jj] != cell[ii][j] - cell[ii-1][j]:break
                             else:
@@ -267,7 +273,8 @@ for p0 in pdf.pages:
                                                     write_into_file("\n")
                                                     write_into_file(ss)
                                                     break
-                    elif ww_2 in ["Daily Offline Time Log Summary", "Drilling Parameters (Fast Drill)"]: # if name of group is ...
+                    elif ww_2 in ["Daily Offline Time Log Summary", "Drilling Parameters (Fast Drill)", "Daily Job Supply Summary", "String Components", "Daily Drilling Parameters and Hydraulics - If hydraulics are blank, check \"String Detail by Job - Hydr & AV\" report for errors", "Wellbore (Hole) Sections", "Survey Data - Shows all surveys entered during the report period", "Casing Strings - Only shows information for the longest casing component in a string - for other components see casing detail report"]: # if name of group is ...
+                        print("ww_2" + ww_2)
                         # col header
                         pre_cell = -2
                         header = []
@@ -285,7 +292,7 @@ for p0 in pdf.pages:
                                 if cell[iii][jj] != pre_cell:
                                     if header[header_cc] != "":
                                         if sss != "": sss += ", "
-                                        sss += '"' + header[header_cc] + '": "' + remove_special_characters(word[cell[iii][jj]]) + '" '
+                                        sss += '"' + header[header_cc] + '": "' + remove_special_characters(" ".join(word[cell[iii][jj]].splitlines())) + '" '
                                     pre_cell = cell[iii][jj]
                                     header_cc += 1
                                 cell[iii][jj] = -1
@@ -411,7 +418,7 @@ for p0 in pdf.pages:
                             for jj in range(j, k+1):
                                 cell[iii][jj] = -1
 
-                    elif ww_2 in ["Well Information", "Daily Operations Information", "Management Summary", "Mud Checks"]:
+                    elif ww_2 in ["Well Information", "Daily Operations Information", "Management Summary", "Mud Checks", "Mud Volume Summary", "String No. 3", "String No. 3", "String No. 3  - Bit Information", "Wellbore Information", "Deviation Survey (Tie point) -  TABU-B19 Actual Survey"]:
                         print("www = " + ww_2) 
                         pre_cell = -2
                         ss += "{\n"
@@ -421,10 +428,11 @@ for p0 in pdf.pages:
                                 if cell[iii][jj] != pre_cell:
                                     if sss != "" and word[cell[iii][jj]] != "": sss += ", "
                                     ww = " ".join(word[cell[iii][jj]].splitlines()) 
-                                    sss += '"' + remove_special_characters(word[cell[iii][jj]].splitlines()[0]) + '": "'
-                                    if len(word[cell[iii][jj]].splitlines()) > 1 : 
-                                        sss += remove_special_characters(word[cell[iii][jj]].splitlines()[1])
-                                    sss += '"'
+                                    if len(word[cell[iii][jj]].splitlines()) > 0 :
+                                        sss += '"' + remove_special_characters(word[cell[iii][jj]].splitlines()[0]) + '": "'
+                                        if len(word[cell[iii][jj]].splitlines()) > 1 : 
+                                            sss += remove_special_characters(word[cell[iii][jj]].splitlines()[1])
+                                        sss += '"'
                                     pre_cell = cell[iii][jj]
                                 cell[iii][jj] = -1
                             if sss != "":
@@ -452,12 +460,13 @@ for p0 in pdf.pages:
                                 ss += sss
             # Output to output file
             if ww_2 != "": 
+                ww_2 = remove_special_characters(ww_2)
                 if write_started:
                     # my_file.write(", \n")
                     write_into_file(", \n")
-                if ww_2.__contains__("ype Time"):
-                    # Remove special characters
-                    ww_2 = ww_2.replace('"', '')
+                # if ww_2.__contains__("ype Time"):
+                #     # Remove special characters
+                #     ww_2 = ww_2.replace('"', '')
                 if ss != "" and ss[0] == "{": 
                     #ww_2 = '"' + ww_2 + '": {\n'
                     ww_2 = '"' + ww_2 + '": [\n'

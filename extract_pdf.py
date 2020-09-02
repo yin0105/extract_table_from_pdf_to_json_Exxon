@@ -21,6 +21,10 @@ def multiline_to_json(s):
         rr += sss
     return rr
 
+def remove_special_characters(content):
+    # return ''.join(e for e in content if e.isalnum() or e == ' ')
+    return content.replace('"', '\\"')
+
 # datetime object containing current date and time
 now = datetime.now()
 dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -45,7 +49,9 @@ filename = filename[:filename.rfind(".")]
 # Get row data of the tables in a pdf file using tabula and Save them as array
 df = tabula.read_pdf(pdf_file, pages="all", guess = False, multiple_tables = True) 
 t_word = []
+first_row = []
 for a in df:
+    first_row_tmp = []
     t_word_page = []
     for i in range(len(a.index)):
         count = 0
@@ -55,6 +61,13 @@ for a in df:
             if ss != "nan" and ss.strip() != "":
                 t_word_tmp.append(" ".join(ss.splitlines()))
         t_word_page.append(t_word_tmp)
+        if len(first_row_tmp) <2 and len(t_word_tmp) == 1 :
+            first_row_tmp.append(t_word_tmp[0])
+            # print(t_word_tmp[0])
+        
+        # print(str(i) + "  " + str(c) + "  " + "::".join(t_word_tmp))
+    first_row.append(first_row_tmp[1])
+    print("first_row :: " + first_row_tmp[1])
     t_word.append(t_word_page)
 
 
@@ -62,8 +75,8 @@ for a in df:
 pdf = pdfplumber.open(pdf_file) 
 
 # Open output text file
-filename += "_" + f"{dt_string}.txt"
-# filename = "output.txt"
+# filename += "_" + f"{dt_string}.txt"
+filename = "output.txt"
 my_file = open(f"{output_path}\{filename}", "w", encoding="utf8")
 print(f"{output_path}\{filename}")
 write_into_file("{\n")
@@ -74,9 +87,7 @@ page_num = 0 # current page number (1 ~ )
 write_started = False # Whether writing started
 
 
-def remove_special_characters(content):
-    # return ''.join(e for e in content if e.isalnum() or e == ' ')
-    return content.replace('"', '\\"')
+
 
 print(remove_special_characters('233"C'))
 
@@ -95,19 +106,32 @@ for p0 in pdf.pages:
     # Iterate through rows
     # print(df)
     # my_file.write(df)
+    bit_data_flag = False
+    
+    # first row
+    cell_temp = []
+    word.append(first_row[page_num - 1])
+    for j in  range(len(df.columns)):
+        cell_temp.append(len(word) - 1)
+    cell.append(cell_temp)
+
     for i in range(len(df.index)):
         # my_file.write("line " + str(i) + " : ")
-        count = 0
+        count = 1
         cell_temp = []
+        
+
+        
         # Iterate through columns
         for j in  range(len(df.columns)):
+            
             ss = str(df.iloc[i, j])          
             # my_file.write(str(j) + ":" + ss + "  ")
             if ss != "None" :
                 word.append(ss)
                 count += 1
             else:
-                if j == 0 or (str(df.iloc[i, 0]) == "Output" and (j == 1 or j == 15)):
+                if j == 0 or (str(df.iloc[i, 0]) == "Output" and (j == 1 or j == 15)) or (str(df.iloc[i, 0]) == "Output" and (j == 1 or j == 15)):
                     word.append("")
                     count += 1
 
@@ -133,13 +157,14 @@ for p0 in pdf.pages:
             
             # Whether data is group
             if i < len(df.index)-1 and k > j: 
-                print( str(i) + "  " + str(j) + "  " + str(k) + "  ::  " + ww_2)
-                if (j == 0 or (j > 0 and cell[i+1][j-1] != cell[i+1][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[i+1][k] != cell[i+1][k+1])) and (cell[i+1][j] != cell[i+1][k] or ww_2 in ["COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]) :
-                    print( str(i) + "  " + str(j) + "  " + str(k) + "  ::  " + ww_2)
+                # print( str(i) + "  " + str(j) + "  " + str(k) + "  ::  " + ww_2)
+                if (j == 0 or (j > 0 and cell[i+1][j-1] != cell[i+1][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[i+1][k] != cell[i+1][k+1])) and (cell[i+1][j] != cell[i+1][k] or ww_2 in ["Well Information",        "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]) :
+                    # print( str(i) + "  " + str(j) + "  " + str(k) + "  ::  " + ww_2)
                     # Get the number of rows in a group
                     for ii in range(i+2, len(df.index)): 
-                        if not ((j == 0 or (j > 0 and cell[ii][j-1] != cell[ii][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[ii][k] != cell[ii][k+1])) and (cell[ii][j] != cell[ii][k] or ww_2 in ["COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"])) : break
-                        if not(ww_2 in ["COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]):
+                        if ww_2 == "Well Information" and word[cell[ii][j]] == "Daily Operations Information": break
+                        if not ((j == 0 or (j > 0 and cell[ii][j-1] != cell[ii][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[ii][k] != cell[ii][k+1])) and (cell[ii][j] != cell[ii][k] or ww_2 in ["Well Information",        "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"])) : break
+                        if not(ww_2 in ["Well Information",        "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]):
                             for jj in range(j+1, k+1): 
                                 if cell[ii][jj] - cell[ii-1][jj] != cell[ii][j] - cell[ii-1][j]:break
                             else:
@@ -266,9 +291,10 @@ for p0 in pdf.pages:
                         for jj in range(j, k + 1):
                             if cell[i+1][jj] != pre_cell:
                                 if sss != "": sss += ", "
-                                sss += " ".join(word[cell[i+1][jj]].splitlines())
+                                sss += '"' + '": "'.join(" ".join(word[cell[i+1][jj]].splitlines()).split(":")) + '"'
                                 pre_cell = cell[i+1][jj]
-                            # cell[i+1][jj] = -1
+                            cell[i+1][jj] = -1
+                        # sss = '"' + '": "'.join(sss.split(":")) + '"'
                         sss = '{' + sss + '}'
                         if ss != "": ss += ", "
                         ss += sss
@@ -328,9 +354,14 @@ for p0 in pdf.pages:
                             sss = '{' + sss + '}'
                             if ss != "": ss += ", "
                             ss += sss
-                    elif ww_2 in ["BULKS", "PUMP/HYDRAULICS"]: 
+                    elif ww_2 in ["BULKS", "PUMP/HYDRAULICS", "BIT DATA"]: 
                         # Row Header
+                        # if ww_2 == "BIT DATA":
+                        #     print("j = " + str(j) + "  k = " + str(k))
+                        #     my_file.write("BBBBBBBBBBBBBBBBBBBBBBBBBBBB")
                         for jj in range(j + 1, k + 1):
+                            # if ww_2 == "BIT DATA":
+                            #     my_file.write(str(cell[i+1][jj]) + "==" + str(cell[i+1][jj-1]) + "\n")
                             if cell[i+1][jj] == cell[i+1][jj-1]: continue
                             sss = ""
                             for iii in range(i + 1, ii):                                 
@@ -338,13 +369,16 @@ for p0 in pdf.pages:
                                 if sss != "" : sss += ", "
                                 sss += '"' + ' '.join(word[cell[iii][j]].splitlines()) + '": "' + remove_special_characters(' '.join(word[cell[iii][jj]].splitlines())) + '"'
                                 # print(str(iii) + "  " + str(jj) + "  " + " ".join(word[cell[iii][j]].splitlines()) + ": " +" ".join(word[cell[iii][jj]].splitlines()))
-                                cell[iii][jj] = -1
                             sss = '{' + sss + '}'
                             
                             if ss != "": ss += ", "
                             ss += sss
                         for iii in range(i + 1, ii):
-                            cell[iii][j] = -1
+                            for jj in range(j, k+1):
+                                cell[iii][jj] = -1
+                        # if ww_2 == "BIT DATA":
+                        #     print("j = " + str(j) + "  k = " + str(k))
+                        #     my_file.write(ss + "EEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
                     elif ww_2 in ["PIPE DATA"]: 
                         # Multiple Row Header
                         jj_count = 0
@@ -369,9 +403,29 @@ for p0 in pdf.pages:
                             for jj in range(j, k+1):
                                 cell[iii][jj] = -1
 
+                    elif ww_2 in ["Well Information"]: 
+                        pre_cell = -2
+                        for iii in range(i + 1, ii): 
+                            sss = ""
+                            for jj in range(j, k + 1):
+                                if cell[iii][jj] != pre_cell:
+                                    if sss != "" and word[cell[iii][jj]] != "": sss += ", "
+                                    ww = " ".join(word[cell[iii][jj]].splitlines()) 
+                                    sss += '"' + word[cell[iii][jj]].splitlines()[0] + '": "'
+                                    if len(word[cell[iii][jj]].splitlines()) > 1 : 
+                                        sss += word[cell[iii][jj]].splitlines()[1]
+                                    sss += '"'
+                                    pre_cell = cell[iii][jj]
+                                cell[iii][jj] = -1
+                            if sss != "":
+                                sss = '{' + sss + '}'
+                                
+                                if ss != "": ss += ", "
+                                ss += sss
+
                         
                     else: # etc group
-                        print(ww_2)
+                        print("ww_s = " + ww_2)
                         pre_cell = -2
                         for iii in range(i + 1, ii): 
                             sss = ""
@@ -382,11 +436,11 @@ for p0 in pdf.pages:
                                     sss += multiline_to_json(word[cell[iii][jj]])
                                     pre_cell = cell[iii][jj]
                                 cell[iii][jj] = -1
-                            sss = '{' + sss + '}'
-                            print("ww_2: " + sss)
-                            
-                            if ss != "": ss += ", "
-                            ss += sss
+                            if sss != "":
+                                sss = '{' + sss + '}'
+                                
+                                if ss != "": ss += ", "
+                                ss += sss
             # Output to output file
             if ww_2 != "": 
                 if write_started:

@@ -104,8 +104,6 @@ for p0 in pdf.pages:
 
     # Set an array of index of cell data and an array of cell data
     # Iterate through rows
-    # print(df)
-    # my_file.write(df)
     bit_data_flag = False
     
     # first row
@@ -157,9 +155,7 @@ for p0 in pdf.pages:
             if ww_2 == "Management Summary" : print("ii = " + str(ii) + "  i = " + str(i) + "  j= " + str(j) + " k = " + str(k)) 
             # Whether data is group
             if i < len(df.index)-1 and k > j: 
-                # print( str(i) + "  " + str(j) + "  " + str(k) + "  ::  " + ww_2)
                 if (j == 0 or (j > 0 and cell[i+1][j-1] != cell[i+1][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[i+1][k] != cell[i+1][k+1])) and (cell[i+1][j] != cell[i+1][k] or ww_2 in ["Well Information", "Management Summary", "Mud Checks", "Mud Volume Summary", "String No. 3", "String No. 3  - Bit Information", "Wellbore Information", "Deviation Survey (Tie point) -  TABU-B19 Actual Survey",       "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]) :
-                    # print( str(i) + "  " + str(j) + "  " + str(k) + "  ::  " + ww_2)
                     # Get the number of rows in a group
                     for ii in range(i+2, len(df.index)): 
                         if ww_2 == "Management Summary" : print("ii = " + str(ii))
@@ -184,11 +180,12 @@ for p0 in pdf.pages:
                         if ii < i + 2: ii = i + 2
                         if ww_2 == "Management Summary" : print("ii = " + str(ii))
                         if ii == len(df.index) - 1 : ii += 1
+                        if ii == len(df.index) : ii += 1
                     
 
                     if ww_2 == "PUMP/HYDRAULICS": print ("ii = " + str(ii))
                     
-                    if ww_2 == "Time Log": # if name of group is "OPERATION SUMMARY"
+                    if ww_2 == "Time Log":
                         pre_cell = -2
                         header = []
                         # Get the column headers in a group
@@ -268,8 +265,6 @@ for p0 in pdf.pages:
 
                                                 if ss != "": ss += "\n"
                                                 if len(tmp_list) == 0: 
-                                                    # my_file.write("\n")
-                                                    # my_file.write(ss)
                                                     write_into_file("\n")
                                                     write_into_file(ss)
                                                     break
@@ -370,20 +365,13 @@ for p0 in pdf.pages:
                             if ss != "": ss += ", "
                             ss += sss
                     elif ww_2 in [         "BULKS", "PUMP/HYDRAULICS", "BIT DATA"]: 
-                        # Row Header
-                        # if ww_2 == "BIT DATA":
-                        #     print("j = " + str(j) + "  k = " + str(k))
-                        #     my_file.write("BBBBBBBBBBBBBBBBBBBBBBBBBBBB")
                         for jj in range(j + 1, k + 1):
-                            # if ww_2 == "BIT DATA":
-                            #     my_file.write(str(cell[i+1][jj]) + "==" + str(cell[i+1][jj-1]) + "\n")
                             if cell[i+1][jj] == cell[i+1][jj-1]: continue
                             sss = ""
                             for iii in range(i + 1, ii):                                 
                                 if ' '.join(word[cell[iii][j]].splitlines()) == '' : continue
                                 if sss != "" : sss += ", "
                                 sss += '"' + ' '.join(word[cell[iii][j]].splitlines()) + '": "' + remove_special_characters(' '.join(word[cell[iii][jj]].splitlines())) + '"'
-                                # print(str(iii) + "  " + str(jj) + "  " + " ".join(word[cell[iii][j]].splitlines()) + ": " +" ".join(word[cell[iii][jj]].splitlines()))
                             sss = '{' + sss + '}'
                             
                             if ss != "": ss += ", "
@@ -391,9 +379,6 @@ for p0 in pdf.pages:
                         for iii in range(i + 1, ii):
                             for jj in range(j, k+1):
                                 cell[iii][jj] = -1
-                        # if ww_2 == "BIT DATA":
-                        #     print("j = " + str(j) + "  k = " + str(k))
-                        #     my_file.write(ss + "EEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
                     elif ww_2 in ["PIPE DATA"]: 
                         # Multiple Row Header
                         jj_count = 0
@@ -409,7 +394,6 @@ for p0 in pdf.pages:
                             for iii in range(i + 1, ii): 
                                 if sss != "" : sss += ", "
                                 sss += '"' + remove_special_characters(' '.join(word[cell[iii][base_j]].splitlines())) + '": "' + remove_special_characters(' '.join(word[cell[iii][jj]].splitlines())) + '"'
-                                # print(str(iii) + "  " + str(jj) + "  " + " ".join(word[cell[iii][j]].splitlines()) + ": " +" ".join(word[cell[iii][jj]].splitlines()))
                             sss = '{' + sss + '}'
                             
                             if ss != "": ss += ", "

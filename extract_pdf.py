@@ -154,28 +154,35 @@ for p0 in pdf.pages:
             k -= 1
             # data (or key of group)
             ww_2 = " ".join(word[cell[i][j]].splitlines())
-            
+            if ww_2 == "Management Summary" : print("ii = " + str(ii) + "  i = " + str(i) + "  j= " + str(j) + " k = " + str(k)) 
             # Whether data is group
             if i < len(df.index)-1 and k > j: 
                 # print( str(i) + "  " + str(j) + "  " + str(k) + "  ::  " + ww_2)
-                if (j == 0 or (j > 0 and cell[i+1][j-1] != cell[i+1][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[i+1][k] != cell[i+1][k+1])) and (cell[i+1][j] != cell[i+1][k] or ww_2 in ["Well Information",        "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]) :
+                if (j == 0 or (j > 0 and cell[i+1][j-1] != cell[i+1][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[i+1][k] != cell[i+1][k+1])) and (cell[i+1][j] != cell[i+1][k] or ww_2 in ["Well Information", "Management Summary", "Mud Checks",        "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]) :
                     # print( str(i) + "  " + str(j) + "  " + str(k) + "  ::  " + ww_2)
                     # Get the number of rows in a group
                     for ii in range(i+2, len(df.index)): 
+                        if ww_2 == "Management Summary" : print("ii = " + str(ii))
                         if ww_2 == "Well Information" and word[cell[ii][j]] == "Daily Operations Information": break
-                        if not ((j == 0 or (j > 0 and cell[ii][j-1] != cell[ii][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[ii][k] != cell[ii][k+1])) and (cell[ii][j] != cell[ii][k] or ww_2 in ["Well Information",        "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"])) : break
-                        if not(ww_2 in ["Well Information",        "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]):
+                        if ww_2 == "Daily Operations Information" and word[cell[ii][j]] == "Time Log": break
+                        if ww_2 == "Management Summary" and word[cell[ii][j]] == "Mud Checks": break
+                        if ww_2 == "Mud Checks" and word[cell[ii][j]] == "Mud Volume Summary": break
+                        if not ((j == 0 or (j > 0 and cell[ii][j-1] != cell[ii][j])) and (k == len(df.columns) - 1 or (k < len(df.columns) - 1 and cell[ii][k] != cell[ii][k+1])) and (cell[ii][j] != cell[ii][k] or ww_2 in ["Well Information", "Daily Operations Information", "Management Summary", "Mud Checks",       "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"])) : break
+                        if not(ww_2 in ["Well Information", "Daily Operations Information", "Management Summary", "Mud Checks",        "COSTS", "STATUS", "MUD CHECK", "BIT DATA", "GAS READINGS", "MUD VOLUME", "PERSONNEL", "PUMP/HYDRAULICS"]):
                             for jj in range(j+1, k+1): 
                                 if cell[ii][jj] - cell[ii-1][jj] != cell[ii][j] - cell[ii-1][j]:break
                             else:
                                 continue
                             break
                     else:
+                        if ii < i + 2: ii = i + 2
+                        if ww_2 == "Management Summary" : print("ii = " + str(ii))
                         if ii == len(df.index) - 1 : ii += 1
+                    
 
                     if ww_2 == "PUMP/HYDRAULICS": print ("ii = " + str(ii))
                     
-                    if ww_2 == "OPERATION SUMMARY": # if name of group is "OPERATION SUMMARY"
+                    if ww_2 == "Time Log": # if name of group is "OPERATION SUMMARY"
                         pre_cell = -2
                         header = []
                         # Get the column headers in a group
@@ -260,7 +267,8 @@ for p0 in pdf.pages:
                                                     write_into_file("\n")
                                                     write_into_file(ss)
                                                     break
-                    elif ww_2 == "SHAKER" or ww_2 == "HYDROCYCLONE" or ww_2 == "LOT/FIT" or ww_2 == "FORMATION DATA": # if name of group is ...
+                    elif ww_2 in ["Daily Offline Time Log Summary", "Drilling Parameters (Fast Drill)"]: # if name of group is ...
+                        # col header
                         pre_cell = -2
                         header = []
                         # Get the columns data in group
@@ -354,7 +362,7 @@ for p0 in pdf.pages:
                             sss = '{' + sss + '}'
                             if ss != "": ss += ", "
                             ss += sss
-                    elif ww_2 in ["BULKS", "PUMP/HYDRAULICS", "BIT DATA"]: 
+                    elif ww_2 in [         "BULKS", "PUMP/HYDRAULICS", "BIT DATA"]: 
                         # Row Header
                         # if ww_2 == "BIT DATA":
                         #     print("j = " + str(j) + "  k = " + str(k))
@@ -403,25 +411,26 @@ for p0 in pdf.pages:
                             for jj in range(j, k+1):
                                 cell[iii][jj] = -1
 
-                    elif ww_2 in ["Well Information"]: 
+                    elif ww_2 in ["Well Information", "Daily Operations Information", "Management Summary", "Mud Checks"]:
+                        print("www = " + ww_2) 
                         pre_cell = -2
+                        ss += "{\n"
                         for iii in range(i + 1, ii): 
                             sss = ""
                             for jj in range(j, k + 1):
                                 if cell[iii][jj] != pre_cell:
                                     if sss != "" and word[cell[iii][jj]] != "": sss += ", "
                                     ww = " ".join(word[cell[iii][jj]].splitlines()) 
-                                    sss += '"' + word[cell[iii][jj]].splitlines()[0] + '": "'
+                                    sss += '"' + remove_special_characters(word[cell[iii][jj]].splitlines()[0]) + '": "'
                                     if len(word[cell[iii][jj]].splitlines()) > 1 : 
-                                        sss += word[cell[iii][jj]].splitlines()[1]
+                                        sss += remove_special_characters(word[cell[iii][jj]].splitlines()[1])
                                     sss += '"'
                                     pre_cell = cell[iii][jj]
                                 cell[iii][jj] = -1
                             if sss != "":
-                                sss = '{' + sss + '}'
-                                
-                                if ss != "": ss += ", "
+                                if ss != "{\n": ss += ", "
                                 ss += sss
+                        ss += "}"
 
                         
                     else: # etc group
@@ -433,7 +442,7 @@ for p0 in pdf.pages:
                                 if cell[iii][jj] != pre_cell:
                                     if sss != "" and word[cell[iii][jj]] != "": sss += ", "
                                     ww = " ".join(word[cell[iii][jj]].splitlines()) 
-                                    sss += multiline_to_json(word[cell[iii][jj]])
+                                    sss += word[cell[iii][jj]]
                                     pre_cell = cell[iii][jj]
                                 cell[iii][jj] = -1
                             if sss != "":

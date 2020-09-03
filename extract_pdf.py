@@ -357,16 +357,8 @@ for p0 in pdf.pages:
                     ww_2 = remove_special_characters(ww_2)
                     ww_2 = '"' + ww_2 + '": ""'
 
-                # my_file.write(ww_2)
-                if ww_2.__contains__("Currentstatus"):
-                    ww_2 = ww_2.replace('6"', '6\\"').replace('5.5"', '5.5\\"').replace('10"', '10\\"').replace('2"', '2\\"').strip()
-
                 write_into_file(ww_2)
                 write_started = True
-
-            # if ss != "": my_file.write(ss)
-            if ss != "" and ww_2.__contains__("OPERATION SUMMARY"):
-                ss = ss.replace('6"', '6\\"').replace('5.5"', '5.5\\"').replace('10"', '10\\"').replace('2"', '2\\"').strip()
 
             if ss != "": write_into_file(ss)
 
